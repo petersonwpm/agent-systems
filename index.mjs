@@ -1,10 +1,25 @@
 import ollama from 'ollama'
 
-const MODEL = 'qwen2.5:3b-instruct'
-const messages = [{
-    role: 'user',
-    content: 'cancele o pedido 123'
-}]
+//const MODEL = 'qwen2.5:3b-instruct'
+const MODEL = 'deepseek-r1:8b'
+const messages = [
+    {
+        role: 'system',
+        content: `
+            Você é um agente de pós-venda.
+
+            Você não possui acesso direto aos dados dos pedidos.
+            Para obter informações sobre pedidos, use as ferramentas disponíveis.
+
+            Quando o usuário solicitar uma ação que possa ser realizada
+            por uma ferramenta, não explique como o usuário poderia fazê - la.
+            Execute a ferramenta apropriada.
+        `
+    },
+    {
+        role: 'user',
+        content: 'cancele o pedido 123'
+    }]
 
 const tools = [
     {
@@ -85,45 +100,34 @@ while (true) {
     }
 
     for (const call of response.message.tool_calls) {
-        switch (call.function.name) {
-            case "getOrder": {
-                const order = getOrder(call.function.arguments.orderId)
-                messages.push({
-                    role: 'tool',
-                    tool_name: call.function.name,
-                    content: JSON.stringify(order)
-                })
-                break
-            }
-
-            case "getCustomer": {
-                const customer = getCustomer(call.function.arguments.customerId)
-                messages.push({
-                    role: 'tool',
-                    tool_name: call.function.name,
-                    content: JSON.stringify(customer)
-                })
-                break
-            }
-
-            case "cancelOrder": {
-                const order = cancelOrder(call.function.arguments.orderId)
-                messages.push({
-                    role: 'tool',
-                    tool_name: call.function.name,
-                    content: JSON.stringify(order)
-
-                })
-                break
-            }
-
-            default:
-                console.log(call.function.name)
-                throw new Error("Tool não permitida")
-        }
+        const content = execute(call)
+        messages.push({
+            role: 'tool',
+            tool_name: call.function.name,
+            content: JSON.stringify(content)
+        })
     }
 }
 
+function execute(call) {
+    switch (call.function.name) {
+        case "getOrder": {
+            return getOrder(call.function.arguments.orderId)
+        }
+
+        case "getCustomer": {
+            return getCustomer(call.function.arguments.customerId)
+        }
+
+        case "cancelOrder": {
+            return cancelOrder(call.function.arguments.orderId)
+        }
+
+        default:
+            console.log(call.function.name)
+            throw new Error("Tool não permitida")
+    }
+}
 
 function getOrder(orderId) {
     return {
