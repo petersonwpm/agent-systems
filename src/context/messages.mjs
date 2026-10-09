@@ -12,11 +12,7 @@ const messages = [
             Execute a ferramenta apropriada.
         `
     },
-    {
-        role: 'user',
-        content: 'cancele o pedido 123'
-    }]
-
+]
 export {
     messages
 }
