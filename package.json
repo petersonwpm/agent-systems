@@ -1,13 +1,14 @@
 {
-  "name": "agente-pos-venda",
+  "name": "agent-systems",
   "version": "1.0.0",
   "description": "Mais um agente de IA no mercado",
   "license": "ISC",
   "author": "",
-  "type": "commonjs",
-  "main": "index.js",
+  "type": "module",
+  "main": "index.mjs",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node src/index.mjs",
+    "test": "node --test"
   },
   "dependencies": {
     "ollama": "^0.6.3"
