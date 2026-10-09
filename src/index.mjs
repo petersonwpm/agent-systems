@@ -1,4 +1,6 @@
 import ollama from 'ollama'
+import { log, dir } from './log.mjs'
+import { getOrder, getCustomer, cancelOrder } from './tools.mjs';
 
 //const MODEL = 'qwen2.5:3b-instruct'
 const MODEL = 'deepseek-r1:8b'
@@ -9,7 +11,7 @@ const messages = [
             Você é um agente de pós-venda.
 
             Você não possui acesso direto aos dados dos pedidos.
-            Para obter informações sobre pedidos, use as ferramentas disponíveis.
+            Para efetuar ações sobre pedidos, use obrigatoriamente as ferramentas disponíveis.
 
             Quando o usuário solicitar uma ação que possa ser realizada
             por uma ferramenta, não explique como o usuário poderia fazê - la.
@@ -94,10 +96,15 @@ while (true) {
     })
     messages.push(response.message)
 
+    log('tool_calls')
+    dir(response.message, { depth: null })
+    log(JSON.stringify(response))
+
     if (!response.message.tool_calls?.length) {
-        console.log(response.message.content)
+        log(response.message.content)
         break
     }
+
 
     for (const call of response.message.tool_calls) {
         const content = execute(call)
@@ -126,39 +133,5 @@ function execute(call) {
         default:
             console.log(call.function.name)
             throw new Error("Tool não permitida")
-    }
-}
-
-function getOrder(orderId) {
-    return {
-        id: orderId,
-        customerId: 123,
-        status: 'shipped',
-        total: 850.00
-    }
-}
-
-function getCustomer(customerId) {
-    return {
-        id: customerId,
-        name: "João da Silva",
-        email: "joao@gmail.com"
-    }
-}
-
-function cancelOrder(orderId) {
-    const order = getOrder(orderId)
-
-    if (order.status === 'shipped') {
-        return {
-            success: false,
-            reason: 'order_already_shipped'
-        }
-    }
-
-    return {
-        id: orderId,
-        success: true,
-        status: 'cancelled'
     }
 }
